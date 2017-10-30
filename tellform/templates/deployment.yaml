@@ -1,0 +1,84 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "tellform.fullname" . }}
+  labels:
+    app: {{ template "tellform.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "tellform.name" . }}
+        release: "{{ .Release.Name }}"
+    spec:
+      containers:
+      - name: {{ template "tellform.fullname" . }}
+        image: "{{ .Values.image }}"
+        imagePullPolicy: {{ default "" .Values.imagePullPolicy | quote }}
+        env:
+        # Mail config
+        - name: MAILER_EMAIL_ID
+          value: {{ .Values.config.mail.MAILER_EMAIL_ID | quote }}
+        - name: MAILER_PASSWORD
+          value: {{ .Values.config.mail.MAILER_PASSWORD | quote }}
+        - name: MAILER_FROM
+          value: {{ .Values.config.mail.MAILER_FROM | quote }}
+        # Use this for one of Nodemailer's pre-configured service providers
+        - name: MAILER_SERVICE_PROVIDER
+          value: {{ .Values.config.mail.MAILER_SERVICE_PROVIDER | quote }}
+        # Use these for a custom service provider 
+        # Note: MAILER_SMTP_HOST will override MAILER_SERVICE_PROVIDER
+        - name: MAILER_SMTP_HOST
+          value: {{ .Values.config.mail.MAILER_SMTP_HOST | quote }}
+        - name: MAILER_SMTP_PORT
+          value: {{ .Values.config.mail.MAILER_SMTP_PORT | quote }}
+        - name: MAILER_SMTP_SECURE
+          value: {{ .Values.config.mail.MAILER_SMTP_SECURE | quote }}
+        # - name: REDIS_URL
+        #   value: {{ template "tellform.redis.fullname" . }}
+        - name: REDIS_DB_PORT_6379_TCP_ADDR
+          value: {{ template "tellform.redis.fullname" . }}
+        - name: REDIS_DB_PORT_6379_TCP_PORT
+          value: "6379"
+        - name: DB_PORT_27017_TCP_ADDR
+        {{ if .Values.mongodb.mongodbUsername }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "tellform.fullname" . }}
+              key: mongo-uri
+        {{ else }}
+          value: {{ template "tellform.mongodb.fullname" . }}
+        {{ end }}        
+        - name: DB_HOST
+        {{ if .Values.mongodb.mongodbUsername }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "tellform.fullname" . }}
+              key: mongo-uri
+        {{ else }}
+          value: {{ template "tellform.mongodb.fullname" . }}
+        {{ end }}
+        {{ if .Values.host }}
+        - name: BASE_URL
+          value: https://{{ .Values.host }}
+        {{ end }}
+        {{- range $key, $value :=  .Values.config }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: 3000
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 20
+          timeoutSeconds: 5
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+ 

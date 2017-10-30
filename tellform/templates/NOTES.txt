@@ -1,0 +1,27 @@
+TellForm can be accessed via port 80 on the following DNS name from within your cluster:
+
+- http://{{ template "tellform.fullname" . }}.{{ .Release.Namespace }}
+
+You can easily connect to the remote instance from your browser. Forward the webserver port to localhost:8888
+
+- kubectl port-forward --namespace {{ .Release.Namespace }} $(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "tellform.name" . }},release={{ .Release.Name }}" -o jsonpath='{ .items[0].metadata.name }') 8888:3000
+
+You can also connect to the container running TellForm. To open a shell session in the pod run the following:
+
+- kubectl exec -i -t --namespace {{ .Release.Namespace }} $(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "tellform.name" . }},release={{ .Release.Name }}" -o jsonpath='{.items[0].metadata.name}') /bin/sh
+
+To trail the logs for the TellForm pod run the following:
+
+- kubectl logs -f --namespace {{ .Release.Namespace }} $(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "tellform.name" . }},release={{ .Release.Name }}" -o jsonpath='{ .items[0].metadata.name }')
+
+{{- if .Values.ingress.enabled }}
+
+TellForm will be available at the URL:
+
+- http://{{ .Values.host }}
+{{ else }}
+
+To expose TellForm via an Ingress you need to set host and enable ingress.
+
+helm install --set host=tellform.yourdomain.com --set ingress.enabled=true stable/tellform
+{{- end -}}

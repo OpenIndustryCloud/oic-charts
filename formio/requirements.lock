@@ -1,0 +1,9 @@
+dependencies:
+- name: mongodb
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.4.17
+- name: mariadb
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 1.0.5
+digest: sha256:ef9fcf95907724ab538308d959f542a0ab65d88982bf2a45500c047bb619b964
+generated: 2017-10-10T11:30:27.736256563+01:00

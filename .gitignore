@@ -1,0 +1,6 @@
+# Standard system files
+*~
+.DS_Store
+*.tmp
+tmp/*
+
