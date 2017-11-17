@@ -12,11 +12,17 @@ image: tellform/development:latest
 ## Host for the application
 ##
 # host:
+# socketHost: 
 
 
 
 # Main TellForm configuration:
 config:
+  ###
+  #
+  # From reading tellform/tellform code
+  #
+  ###
   APP_NAME: tellform
   APP_DESC: "Open Source alternative to TypeForm"
   SIGNUP_DISABLED: true
@@ -24,10 +30,9 @@ config:
   SUBDOMAINS_DISABLED: true
   SESSION_SECRET: CHANGE_ME_PLEASE
   PORT: 3000
-  SOCKET_PORT: 20523
-
+ 
   # Create first user
-  CREATE_ADMIN_ACCOUNT: false
+  CREATE_ADMIN: false
   ADMIN_EMAIL: admin@admin.com
   ADMIN_USERNAME: root
   ADMIN_PASSWORD: password
@@ -73,6 +78,42 @@ config:
     MAILER_SMTP_HOST: smtp.domain.com
     MAILER_SMTP_PORT: 465
     MAILER_SMTP_SECURE: true
+
+  ###
+  #
+  # From the .env in the Docker format
+  #
+  ###
+  # Set this to the path where Mailu data and configuration is stored
+  ROOT: /opt/tellform_data
+
+  # Mailu version to run (stable, 2.0, 2.1, etc. or latest)
+  VERSION: stable
+  # # Set to what environment you will be running TellForm in (production or development)
+  # NODE_ENV=production
+
+  # Set to a randomly generated 16 bytes string
+  SECRET_KEY: ChangeMeChangeMe
+
+  # # URI of Mongo database that TellForm will connect to
+  # MONGODB_URI=127.0.0.1:27107/mean
+
+  # # URL Redis server that TellForm will connect to
+  # REDIS_URL=127.0.0.1:6379
+
+  # Address where listening ports should bind
+  BIND_ADDRESS: "127.0.0.1"
+
+  # Main domain that TellForm will be hosted at
+  DOMAIN: tellform.com
+
+  # # Port that SocketIO server (for analytics) will listen on
+  SOCKET_PORT: "20523"
+
+  # Set this to server your websockets server on a seperate URL
+  SOCKETS_URL: 
+
+  CREATE_ADMIN: false
 
 ##
 ## MongoDB chart configuration
@@ -124,7 +165,12 @@ redis:
 
 service:
   type: LoadBalancer
-  externalPort: 80
+  tellform:
+    externalPort: 5000
+    internalPort: 5000
+  socket: 
+    externalPort: 20523
+    internalPort: 20523
   loadBalancerIP:
 
 ## Configure the ingress object to hook into existing infastructure

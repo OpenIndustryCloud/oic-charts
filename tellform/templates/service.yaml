@@ -13,9 +13,15 @@ spec:
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
   {{- end }}
   ports:
-  - name: http
-    port: {{ .Values.service.externalPort }}
-    targetPort: 3000
+  - name: tellform
+    port: {{ .Values.service.tellform.externalPort }}
+    targetPort: {{ .Values.service.tellform.internalPort }}
+  - name: socket
+    port: {{ .Values.service.socket.externalPort }}
+    targetPort: {{ .Values.service.socket.internalPort }}
+  - name: smtp
+    port: 587
+    targetPort: 587
   selector:
     app: {{ template "tellform.name" . }}
     release: "{{ .Release.Name }}"

@@ -27,5 +27,12 @@ spec:
       - path: /
         backend:
           serviceName: {{ template "tellform.fullname" . }}
-          servicePort: 3000
+          servicePort: {{ .Values.service.tellform.internalPort }}
+  - host: {{ .Values.socketHost }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ template "tellform.fullname" . }}
+          servicePort: {{ .Values.service.socket.internalPort }}
 {{- end -}}

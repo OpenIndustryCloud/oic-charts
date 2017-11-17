@@ -19,6 +19,7 @@ spec:
       - name: {{ template "tellform.fullname" . }}
         image: "{{ .Values.image }}"
         imagePullPolicy: {{ default "" .Values.imagePullPolicy | quote }}
+        command: [ "./start.sh" ]
         env:
         # Mail config
         - name: MAILER_EMAIL_ID
@@ -44,6 +45,21 @@ spec:
           value: {{ template "tellform.redis.fullname" . }}
         - name: REDIS_DB_PORT_6379_TCP_PORT
           value: "6379"
+        #### FROM DOCKER COMPOSE REPO
+        - name: BIND_ADDRESS
+          value: "0.0.0.0"
+        - name: REDIS_URL
+          value: {{ template "tellform.redis.fullname" . }}:6379
+        - name: MONGODB_URI
+        {{ if .Values.mongodb.mongodbUsername }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "tellform.fullname" . }}
+              key: mongo-uri
+        {{ else }}
+          value: {{ template "tellform.mongodb.fullname" . }}
+        {{ end }}        
+        #### END
         - name: DB_PORT_27017_TCP_ADDR
         {{ if .Values.mongodb.mongodbUsername }}
           valueFrom:
@@ -71,8 +87,12 @@ spec:
           value: {{ $value | quote }}
         {{- end }}
         ports:
-        - name: http
-          containerPort: 3000
+        - name: tellform
+          containerPort: {{ .Values.service.tellform.internalPort }}
+        - name: socket
+          containerPort: {{ .Values.service.socket.internalPort }}
+        - name: smtp
+          containerPort: 587
         livenessProbe:
           httpGet:
             path: /
